@@ -15,4 +15,5 @@ int main()
         }
         printf("%d元",n);
     }
+    return 0;
 }
