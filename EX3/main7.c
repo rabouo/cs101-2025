@@ -14,4 +14,5 @@ int main()
         }
         printf("%d元",money);
     }
+    return 0;
 }
