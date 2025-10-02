@@ -12,4 +12,5 @@ int main()
         sum = 100*x+10*y+z;
     }
     printf("%d",sum);
+    return 0;
 }
