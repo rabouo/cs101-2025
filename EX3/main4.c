@@ -7,4 +7,5 @@ int main()
     }else{
         printf("奇數");
     }
+    return 0;
 }
