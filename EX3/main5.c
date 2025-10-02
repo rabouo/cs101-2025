@@ -7,4 +7,5 @@ int main()
     }else{
         printf("不是閏年");
     }
+    return 0;
 }
