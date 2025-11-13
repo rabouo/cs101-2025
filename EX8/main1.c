@@ -1,78 +1,79 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 
-#define ROWS 5
-#define COLS 7
+#define MAX_LINE_LEN 256
+#define MAX_NUMBERS 7
 
 int main() {
-    FILE *fp;
-    int lotto[ROWS][COLS];
-    char date[50];
-    char buffer[100];
-    int win[3];
-    int i, j;
-
-    // 開啟檔案
-    fp = fopen("lotto.txt", "r");
-    if (fp == NULL) {
-        printf("無法開啟 lotto.txt 檔案！\n");
-        return 1;
-    }
-
-    // 讀前兩行
-    fgets(buffer, sizeof(buffer), fp); // 第1行：========= lotto649 =========
-    fgets(buffer, sizeof(buffer), fp); // 第2行：=====  March 13 2025  ======
-
-    // 擷取日期內容
-    sscanf(buffer, "=====  %[^=]  ======", date);
-
-    // 從第3行開始讀取樂透號碼
-    for (i = 0; i < ROWS; i++) {
-        if (fscanf(fp, "[%*d]:") != 0) {
-            for (j = 0; j < COLS; j++) {
-                fscanf(fp, "%d", &lotto[i][j]);
-            }
+    char filename[] = "lotto.txt";
+    FILE *file = fopen(filename, "r");
+    char line[MAX_LINE_LEN];
+    int winning[3];
+    int found_any = 0;
+    
+    // 輸入中獎號碼
+    printf("請輸入中獎號碼三個： ");
+    scanf("%d %d %d", &winning[0], &winning[1], &winning[2]);
+    
+    printf("輸入中獎號碼為：%02d %02d %02d\n", winning[0], winning[1], winning[2]);
+    printf("以下為中獎彩卷：\n\n");
+    
+    // 跳過檔案開頭格式行，直到找到日期行
+    while (fgets(line, MAX_LINE_LEN, file)) {
+        if (strstr(line, "March 13 2025")) {
+            break;
         }
     }
-    fclose(fp);
-
-    // 使用者輸入中獎號碼
-    printf("請輸入中獎號碼3個 : ");
-    for (i = 0; i < 3; i++) {
-        scanf("%d", &win[i]);
-    }
-
-    // 輸出輸入的中獎號碼（前面補0）
-    printf("輸入中獎號碼為 : ");
-    for (i = 0; i < 3; i++) {
-        printf("%02d ", win[i]);
-    }
-    printf("\n");
-
-    // 檢查是否中獎
-    int any = 0;
-    printf("以下為中獎彩卷 :\n");
-
-    for (i = 0; i < ROWS; i++) {
-        int match = 0;
-        for (j = 0; j < COLS; j++) {
-            for (int k = 0; k < 3; k++) {
-                if (lotto[i][j] == win[k]) {
-                    match++;
+    
+    // 讀取每一張彩券
+    while (fgets(line, MAX_LINE_LEN, file)) {
+        // 檢查是否讀到結尾分隔線
+        if (strstr(line, "========= csie@CGU =========")) {
+            break;
+        }
+        
+        // 解析彩券號碼
+        int numbers[MAX_NUMBERS];
+        char *token;
+        char temp_line[MAX_LINE_LEN];
+        strcpy(temp_line, line);
+        
+        // 找到 [號碼]: 後面的數字
+        token = strtok(temp_line, ":");
+        token = strtok(NULL, ":"); // 跳過第一個冒號前的部分
+        
+        if (token) {
+            // 讀取7個號碼
+            int count = 0;
+            char *num_token = strtok(token, " ");
+            
+            while (num_token != NULL && count < MAX_NUMBERS) {
+                numbers[count] = atoi(num_token);
+                count++;
+                num_token = strtok(NULL, " ");
+            }
+            
+            // 檢查是否包含所有中獎號碼
+            int match_count = 0;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < MAX_NUMBERS; j++) {
+                    if (winning[i] == numbers[j]) {
+                        match_count++;
+                        break;
+                    }
                 }
             }
-        }
-
-        if (match > 0) {
-            any = 1;
-            printf("售出時間 : %s : [ %d ]: ", date, i + 1);
-            for (j = 0; j < COLS; j++) {
-                printf("%02d ", lotto[i][j]); // 兩位數格式
+            
+            // 如果三個中獎號碼都匹配，輸出這張彩券
+            if (match_count == 3) {
+                // 移除換行符號
+                line[strcspn(line, "\n")] = 0;
+                printf("售出時間： March 13 2025: %s\n", line);
+                found_any = 1;
             }
-            printf("\n");
         }
-    }
-  return 0;
+    }    
+    fclose(file);
+    return 0;
 }
-
